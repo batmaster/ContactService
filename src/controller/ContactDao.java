@@ -21,7 +21,7 @@ public class ContactDao {
 	private Map<Integer, Contact> map;
 	
 	/** A runner id for auto assign id to a new contact. */
-	private static int runnerId = 0;
+	private static int runnerId = 1;
 	
 	/**
 	 * Constructor require nothing.

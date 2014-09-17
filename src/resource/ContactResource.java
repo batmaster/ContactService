@@ -52,7 +52,7 @@ public class ContactResource {
 	 * @return contactlist containing the list of contacts
 	 */
 	@GET
-	@Produces(MediaType.TEXT_XML)
+	@Produces(MediaType.APPLICATION_XML)
 	public Response getContact(@QueryParam("q") String title) {
 		if (title == null) {
 			ContactList contacts = dao.findAll();
@@ -79,7 +79,7 @@ public class ContactResource {
 	 */
 	@GET
 	@Path("{id}")
-	@Produces(MediaType.TEXT_XML)
+	@Produces(MediaType.APPLICATION_XML)
 	public Response getContact(@PathParam("id") int id) {
 		Contact contact = dao.find(id);
 		if (contact == null) {
@@ -98,23 +98,6 @@ public class ContactResource {
 		return response;
 	}
 
-	/*@POST
-	public Response post(@Context UriInfo info, Reader reader) {
-		 BufferedReader buff = new BufferedReader(reader);
-		    try {
-		      String msg = buff.readLine( ).trim();
-				System.out.println(msg);
-		    } catch (IOException | NullPointerException ex) {
-		      // log the exception and return 501
-		    } finally {
-		      try { buff.close(); } catch(IOException e) {}
-		    }
-
-		    
-		return Response.ok().build();
-	}*/
-	
-	// psudo method used for testing (post with id parameter)
 	/**
 	 * Create a contact and store in the list in DAO.
 	 * @param id id of the new contact
@@ -127,9 +110,11 @@ public class ContactResource {
 	 * @throws URISyntaxException
 	 */
 	@POST
-	//@Path("{id}")
-	@Consumes(MediaType.TEXT_XML)
+	@Consumes(MediaType.APPLICATION_XML)
 	public Response postContact(Contact contact, @Context UriInfo uriInfo) throws URISyntaxException {
+		if (contact.getId() == 0)
+			contact = dao.createContact(contact.getTitle(), contact.getName(), contact.getEmail(), contact.getPhoneNumber());
+			
 		if (dao.save(contact)) {
 			URI uri = new URI(uriInfo.getAbsolutePath().toString() + contact.getId());
 			Response response = Response.created(uri).build();
@@ -161,7 +146,7 @@ public class ContactResource {
 	 */
 	@PUT
 	@Path("{id}")
-	@Consumes(MediaType.TEXT_XML)
+	@Consumes(MediaType.APPLICATION_XML)
 	public Response putContact(Contact contact, @Context UriInfo uriInfo, @PathParam("id") int id) throws URISyntaxException {
 		contact.setId(id);
 		if (dao.update(contact)) {
