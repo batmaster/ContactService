@@ -52,7 +52,7 @@ public class ContactResource {
 	 * @return contactlist containing the list of contacts
 	 */
 	@GET
-	@Produces(MediaType.APPLICATION_XML)
+	@Produces(MediaType.TEXT_XML)
 	public Response getContact(@QueryParam("q") String title) {
 		if (title == null) {
 			ContactList contacts = dao.findAll();
@@ -79,7 +79,7 @@ public class ContactResource {
 	 */
 	@GET
 	@Path("{id}")
-	@Produces(MediaType.APPLICATION_XML)
+	@Produces(MediaType.TEXT_XML)
 	public Response getContact(@PathParam("id") int id) {
 		Contact contact = dao.find(id);
 		if (contact == null) {
@@ -127,24 +127,22 @@ public class ContactResource {
 	 * @throws URISyntaxException
 	 */
 	@POST
-	@Path("{id}")
-	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	/// แก้ @FormParam @PathParam id
-	public Response postContact(@PathParam("id") @DefaultValue("0") int id, @FormParam("title") String title, @FormParam("name") String name, @FormParam("email") String email, @FormParam("phonenumber") String phoneNumber, @Context UriInfo uriInfo) throws URISyntaxException {
-		System.out.println("POST");
-		Contact contact = dao.createContact(id, title, name, email, phoneNumber);
+	//@Path("{id}")
+	@Consumes(MediaType.TEXT_XML)
+	public Response postContact(Contact contact, @Context UriInfo uriInfo) throws URISyntaxException {
 		if (dao.save(contact)) {
 			URI uri = new URI(uriInfo.getAbsolutePath().toString() + contact.getId());
 			Response response = Response.created(uri).build();
 			
-			System.out.println("POST id " + id);
+			System.out.println("POST id " + contact.getId());
 			System.out.println(" make " + contact);
 			System.out.println(" response" + response);
+
 			return response;
 		}
 		Response response = Response.notModified().build();
 		
-		System.out.println("POST id " + id);
+		System.out.println("POST id " + contact.getId());
 		System.out.println(" make " + contact);
 		System.out.println(" response" + response);
 		return response;
@@ -163,15 +161,14 @@ public class ContactResource {
 	 */
 	@PUT
 	@Path("{id}")
-	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putContact(@PathParam("id") int id, @FormParam("title") String title, @FormParam("name") String name, @FormParam("email") String email, @FormParam("phonenumber") String phoneNumber, @Context UriInfo uriInfo) throws URISyntaxException {
-		System.out.println("PUT");
-		Contact contact = dao.createContact(id, title, name, email, phoneNumber);
+	@Consumes(MediaType.TEXT_XML)
+	public Response putContact(Contact contact, @Context UriInfo uriInfo, @PathParam("id") int id) throws URISyntaxException {
+		contact.setId(id);
 		if (dao.update(contact)) {
 			URI uri = new URI(uriInfo.getAbsolutePath().toString() + contact.getId());
-			Response response = Response.ok(uri).build();
+			Response response = Response.accepted(contact).build();
 			
-			System.out.println("PUT id " + id);
+			System.out.println("PUT id " + contact.getId());
 			System.out.println(" found " + contact);
 			System.out.println(" response" + response);
 			return response;
@@ -179,7 +176,7 @@ public class ContactResource {
 		}
 		Response response = Response.noContent().build();
 		
-		System.out.println("PUT id " + id);
+		System.out.println("PUT id " + contact.getId());
 		System.out.println(" found " + contact);
 		System.out.println(" response" + response);
 		return response;

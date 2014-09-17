@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Poramate Homprakob 5510546077
  *
  */
+@XmlRootElement
 @XmlAccessorType (XmlAccessType.FIELD)
 public class Contact {
 	
@@ -54,6 +55,10 @@ public class Contact {
 	
 	public int getId() {
 		return id;
+	}
+	
+	public void setId(int id) {
+		this.id = id;
 	}
 	
 	public String getTitle() {
