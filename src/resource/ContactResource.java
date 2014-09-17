@@ -22,17 +22,35 @@ import controller.ContactDao;
 import entity.Contact;
 import entity.ContactList;
 
+/**
+ * Used to handle requests from client.
+ * Support request GET, POST, PUT, DELETE.
+ * 
+ * @author Poramate Homprakob 5510546077
+ *
+ */
 @Path("/contacts")
 @Singleton
 public class ContactResource {
 	
 	private ContactDao dao;
 	
+	/**
+	 * Constructor require no parameter.
+	 * Initialize DAO object.
+	 */
 	public ContactResource() {
 		dao = new ContactDao();
 		System.out.println("ContactResource Created");
 	}
 	
+	/**
+	 * Get list of contact with q query.
+	 * If there is q query, return all contacts that have title containing q string.
+	 * If there is no q query, return all contacts.
+	 * @param title some part of title of contact that want to find
+	 * @return contactlist containing the list of contacts
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getContact(@QueryParam("q") String title) {
@@ -54,6 +72,11 @@ public class ContactResource {
 		return response;
 	}
 	
+	/**
+	 * Get a contact with specific id.
+	 * @param id the id of contact that want to find
+	 * @return contact xml if contact is found, otherwise No Content response 
+	 */
 	@GET
 	@Path("{id}")
 	@Produces(MediaType.APPLICATION_XML)
@@ -74,11 +97,41 @@ public class ContactResource {
 		System.out.println(" response" + response);
 		return response;
 	}
+
+	/*@POST
+	public Response post(@Context UriInfo info, Reader reader) {
+		 BufferedReader buff = new BufferedReader(reader);
+		    try {
+		      String msg = buff.readLine( ).trim();
+				System.out.println(msg);
+		    } catch (IOException | NullPointerException ex) {
+		      // log the exception and return 501
+		    } finally {
+		      try { buff.close(); } catch(IOException e) {}
+		    }
+
+		    
+		return Response.ok().build();
+	}*/
 	
+	// psudo method used for testing (post with id parameter)
+	/**
+	 * Create a contact and store in the list in DAO.
+	 * @param id id of the new contact
+	 * @param title title of the new contact
+	 * @param name name of the new contact
+	 * @param email email of the new contact
+	 * @param phoneNumber phone number of the new contact
+	 * @param uriInfo uri used to get absolute path
+	 * @return uri to the new contact if creating success, Not Modified response if the is exist id in the list
+	 * @throws URISyntaxException
+	 */
 	@POST
-	@Consumes(MediaType.APPLICATION_XML)
-	/// แก้ @FormParam id
-	public Response postContact(@FormParam("id") int id, @FormParam("title") String title, @FormParam("name") String name, @FormParam("email") String email, @FormParam("phonenumber") String phoneNumber, @Context UriInfo uriInfo) throws URISyntaxException {
+	@Path("{id}")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	/// แก้ @FormParam @PathParam id
+	public Response postContact(@PathParam("id") @DefaultValue("0") int id, @FormParam("title") String title, @FormParam("name") String name, @FormParam("email") String email, @FormParam("phonenumber") String phoneNumber, @Context UriInfo uriInfo) throws URISyntaxException {
+		System.out.println("POST");
 		Contact contact = dao.createContact(id, title, name, email, phoneNumber);
 		if (dao.save(contact)) {
 			URI uri = new URI(uriInfo.getAbsolutePath().toString() + contact.getId());
@@ -97,10 +150,22 @@ public class ContactResource {
 		return response;
 	}
 	
+	/**
+	 * Update the exist contact in the list.
+	 * @param id id of the old contact in the list
+	 * @param title new title for a contact
+	 * @param name name for a contact
+	 * @param email email for a contact
+	 * @param phoneNumber phone number for a contact
+	 * @param uriInfo uri used to get absolute path
+	 * @return uri to the updated contact if updating success, No Content response if the is no exist id in the list
+	 * @throws URISyntaxException
+	 */
 	@PUT
 	@Path("{id}")
-	@Consumes(MediaType.APPLICATION_XML)
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putContact(@PathParam("id") int id, @FormParam("title") String title, @FormParam("name") String name, @FormParam("email") String email, @FormParam("phonenumber") String phoneNumber, @Context UriInfo uriInfo) throws URISyntaxException {
+		System.out.println("PUT");
 		Contact contact = dao.createContact(id, title, name, email, phoneNumber);
 		if (dao.update(contact)) {
 			URI uri = new URI(uriInfo.getAbsolutePath().toString() + contact.getId());
@@ -120,6 +185,11 @@ public class ContactResource {
 		return response;
 	}
 	
+	/**
+	 * Remove exist contact in the list with specific id.
+	 * @param id id of the contact that want to remove
+	 * @return OK response if success, No Content if there is no exist contact with specific id
+	 */
 	@DELETE
 	@Path("{id}")
 	public Response deleteContact(@PathParam("id") int id) {
