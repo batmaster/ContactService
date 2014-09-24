@@ -1,3 +1,5 @@
-/resource/
-/entity/
 /controller/
+/resource/
+/service/
+/META-INF/
+/entity/

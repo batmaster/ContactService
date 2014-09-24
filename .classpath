@@ -5,5 +5,8 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Jersey2"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Jersey2ext"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Jetty"/>
+	<classpathentry kind="lib" path="/Users/batmaster/Desktop/WebService/derby.jar"/>
+	<classpathentry kind="lib" path="/Users/batmaster/Desktop/WebService/eclipselink.jar"/>
+	<classpathentry kind="lib" path="/Users/batmaster/Desktop/WebService/javax.persistence_2.1.0.v201304241213.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -1,9 +1,11 @@
 package entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.persistence.Entity;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -16,9 +18,10 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Poramate Homprakob 5510546077
  *
  */
+@Entity
 @XmlRootElement
 @XmlAccessorType (XmlAccessType.FIELD)
-public class ContactList {
+public class ContactList implements Serializable {
 	
 	/** Will be transformed to be contacts element within contactlist element. */
 	@XmlElement(name = "contact")

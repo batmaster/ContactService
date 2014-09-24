@@ -3,8 +3,9 @@
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
+
+import service.DaoFactory;
 
 /**
  * <p>
@@ -69,13 +70,17 @@ public class JettyMain {
 		context.addServlet( holder, "/*" );
 		server.setHandler( context );
 		
+		DaoFactory.getInstance().getContactDao();;
+		
 		System.out.println("Starting Jetty server on port " + port);
 		server.start();
 		
 		System.out.println("Server started.  Press ENTER to stop it.");
 		int ch = System.in.read();
 		System.out.println("Stopping server.");
+		DaoFactory.getInstance().shutdown();
 		server.stop();
+		
 	}
 	
 }

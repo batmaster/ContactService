@@ -1,14 +1,7 @@
 package resource;
 
-import java.awt.List;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -16,9 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.glassfish.jersey.server.Uri;
-
-import controller.ContactDao;
+import service.mem.MemContactDao;
 import entity.Contact;
 import entity.ContactList;
 
@@ -33,14 +24,14 @@ import entity.ContactList;
 @Singleton
 public class ContactResource {
 	
-	private ContactDao dao;
+	private MemContactDao dao;
 	
 	/**
 	 * Constructor require no parameter.
 	 * Initialize DAO object.
 	 */
 	public ContactResource() {
-		dao = new ContactDao();
+		dao = new MemContactDao();
 		System.out.println("ContactResource Created");
 	}
 	
@@ -50,6 +41,7 @@ public class ContactResource {
 	 * If there is no q query, return all contacts.
 	 * @param title some part of title of contact that want to find
 	 * @return contactlist containing the list of contacts
+	 * @throws InterruptedException 
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
@@ -64,7 +56,7 @@ public class ContactResource {
 			return response;
 		}
 		ContactList contacts = dao.findAll();
-		Response response = Response.ok(dao.find(title)).build();
+		Response response = Response.ok(dao.findByTitle(title)).build();
 		
 		System.out.println("GET title " + title);
 		System.out.println(" found " + contacts);
@@ -174,21 +166,21 @@ public class ContactResource {
 	 */
 	@DELETE
 	@Path("{id}")
-	public Response deleteContact(@PathParam("id") int id) {
-		Contact contact = dao.delete(id);
-		if (contact == null) {
+	public Response deleteContact(@PathParam("id") long id) {
+		if (dao.delete(id)) {
 			Response response = Response.noContent().build();
 			
-			System.out.println("@DELETE id " + id);
-			System.out.println(" found " + contact);
+			System.out.println("DELETE id " + id);
 			System.out.println(" response" + response);
 			return response;
 		}
 		Response response = Response.ok().build();
 		
-		System.out.println("@DELETE id " + id);
-		System.out.println(" found " + contact);
+		System.out.println("DELETE id " + id);
 		System.out.println(" response" + response);
 		return response;
 	}
+	
 }
+
+
