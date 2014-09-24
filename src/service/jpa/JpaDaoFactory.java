@@ -18,7 +18,9 @@ import service.*;
  * @author jim
  */
 public class JpaDaoFactory extends DaoFactory {
+	
 	private static final String PERSISTENCE_UNIT = "contacts";
+	
 	/** instance of the entity DAO */
 	private ContactDao contactDao;
 	private final EntityManagerFactory emf;
@@ -29,24 +31,33 @@ public class JpaDaoFactory extends DaoFactory {
 		logger = Logger.getLogger(JpaDaoFactory.class.getName());
 	}
 	
+	/**
+	 * Constructor require nothing.
+	 */
 	public JpaDaoFactory() {
 		emf = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT);
 		em = emf.createEntityManager();
 		contactDao = new JpaContactDao( em );
 	}
 	
+	/**
+	 * @see service.DaoFactory#getContactDao()
+	 */
 	@Override
 	public ContactDao getContactDao() {
 		return contactDao;
 	}
 	
+	/**
+	 * @see service.DaoFactory#shutdown()
+	 */
 	@Override
 	public void shutdown() {
 		try {
 			if (em != null && em.isOpen()) em.close();
 			if (emf != null && emf.isOpen()) emf.close();
 		} catch (IllegalStateException ex) {
-			//TODO log it
+			ex.getStackTrace();
 		}
 	}
 }

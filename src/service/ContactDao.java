@@ -3,6 +3,13 @@ package service;
 import entity.Contact;
 import entity.ContactList;
 
+/**
+ * An abstract for contact dao contains method for handling
+ * with contact.
+ * 
+ * @author Poramate Homprakob 5510546077
+ *
+ */
 public abstract class ContactDao {
 
 	/** A runner id for auto assign id to a new contact. */

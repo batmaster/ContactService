@@ -12,7 +12,19 @@ import entity.Contact;
 import entity.ContactList;
 import service.ContactDao;
 
+/**
+ * Data access object for saving and retrieving contacts,
+ * using JPA.
+ * To get an instance of this class use:
+ * <p>
+ * <tt>
+ * dao = DaoFactory.getInstance().getContactDao()
+ * </tt>
+ * 
+ * @author jim
+ */
 public class JpaContactDao extends ContactDao {
+	
 	/** the EntityManager for accessing JPA persistence services. */
 	private final EntityManager em;
 	

@@ -26,6 +26,7 @@ public class Contact implements Serializable {
 	
 	/**
 	 * An attribute of the contact.
+	 * Each contact has unique id.
 	 * E.g. <contact id="200">
 	 */
 	@Id
