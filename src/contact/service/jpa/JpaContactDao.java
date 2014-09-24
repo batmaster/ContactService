@@ -1,16 +1,16 @@
-package service.jpa;
+package contact.service.jpa;
+
+import java.util.logging.Logger;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 
-import java.util.logging.Logger;
-
 import jersey.repackaged.com.google.common.collect.Lists;
-import entity.Contact;
-import entity.ContactList;
-import service.ContactDao;
+import contact.entity.Contact;
+import contact.entity.ContactList;
+import contact.service.ContactDao;
 
 /**
  * Data access object for saving and retrieving contacts,
@@ -54,7 +54,7 @@ public class JpaContactDao extends ContactDao {
 	}
 
 	/**
-	 * @see service.ContactDao#find(long)
+	 * @see contact.service.ContactDao#find(long)
 	 */
 	@Override
 	public Contact find(long id) {
@@ -62,7 +62,7 @@ public class JpaContactDao extends ContactDao {
 	}
 
 	/**
-	 * @see service.ContactDao#findAll()
+	 * @see contact.service.ContactDao#findAll()
 	 */
 	@Override
 	public ContactList findAll() {
@@ -72,7 +72,7 @@ public class JpaContactDao extends ContactDao {
 	}
 
 	/**
-	 * @see service.ContactDao#findByTitle(java.lang.String)
+	 * @see contact.service.ContactDao#findByTitle(java.lang.String)
 	 */
 	@Override
 	public ContactList findByTitle(String titlestr) {
@@ -83,7 +83,7 @@ public class JpaContactDao extends ContactDao {
 	}
 
 	/**
-	 * @see service.ContactDao#delete(long)
+	 * @see contact.service.ContactDao#delete(long)
 	 */
 	@Override
 	public boolean delete(long id) {
@@ -100,7 +100,7 @@ public class JpaContactDao extends ContactDao {
 	}
 	
 	/**
-	 * @see service.ContactDao#save(entity.Contact)
+	 * @see contact.service.ContactDao#save(contact.entity.Contact)
 	 */
 	@Override
 	public boolean save(Contact contact) {
@@ -119,7 +119,7 @@ public class JpaContactDao extends ContactDao {
 	}
 
 	/**
-	 * @see service.ContactDao#update(entity.Contact)
+	 * @see contact.service.ContactDao#update(contact.entity.Contact)
 	 */
 	@Override
 	public boolean update(Contact update) {

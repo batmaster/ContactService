@@ -1,4 +1,4 @@
-package service.mem;
+package contact.service.mem;
 
 import java.io.File;
 
@@ -7,9 +7,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import entity.ContactList;
-import service.ContactDao;
-import service.DaoFactory;
+import contact.entity.ContactList;
+import contact.service.ContactDao;
+import contact.service.DaoFactory;
 
 /**
  * DaoFactory of MemContactDao.
@@ -45,7 +45,7 @@ public class MemDaoFactory extends DaoFactory {
 	}
 
 	/**
-	 * @see service.DaoFactory#getContactDao()
+	 * @see contact.service.DaoFactory#getContactDao()
 	 */
 	@Override
 	public ContactDao getContactDao() {
@@ -53,7 +53,7 @@ public class MemDaoFactory extends DaoFactory {
 	}
 	
 	/**
-	 * @see service.DaoFactory#shutdown()
+	 * @see contact.service.DaoFactory#shutdown()
 	 */
 	@Override
 	public void shutdown() {

@@ -1,17 +1,26 @@
-package resource;
+package contact.resource;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import javax.inject.Singleton;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import service.mem.MemContactDao;
-import entity.Contact;
-import entity.ContactList;
+import contact.entity.Contact;
+import contact.entity.ContactList;
+import contact.service.mem.MemContactDao;
 
 /**
  * Used to handle requests from client.
@@ -168,13 +177,13 @@ public class ContactResource {
 	@Path("{id}")
 	public Response deleteContact(@PathParam("id") long id) {
 		if (dao.delete(id)) {
-			Response response = Response.noContent().build();
+			Response response = Response.ok().build();
 			
 			System.out.println("DELETE id " + id);
 			System.out.println(" response" + response);
 			return response;
 		}
-		Response response = Response.ok().build();
+		Response response = Response.noContent().build();
 		
 		System.out.println("DELETE id " + id);
 		System.out.println(" response" + response);

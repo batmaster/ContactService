@@ -1,4 +1,4 @@
-package service.jpa;
+package contact.service.jpa;
 
 import java.util.logging.Logger;
 
@@ -6,7 +6,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
-import service.*;
+import contact.service.ContactDao;
+import contact.service.DaoFactory;
 
 /**
  * JpaDaoFactory is a factory for DAO that use the Java Persistence API (JPA)
@@ -41,7 +42,7 @@ public class JpaDaoFactory extends DaoFactory {
 	}
 	
 	/**
-	 * @see service.DaoFactory#getContactDao()
+	 * @see contact.service.DaoFactory#getContactDao()
 	 */
 	@Override
 	public ContactDao getContactDao() {
@@ -49,7 +50,7 @@ public class JpaDaoFactory extends DaoFactory {
 	}
 	
 	/**
-	 * @see service.DaoFactory#shutdown()
+	 * @see contact.service.DaoFactory#shutdown()
 	 */
 	@Override
 	public void shutdown() {

@@ -1,6 +1,6 @@
-package service;
+package contact.service;
 
-import service.jpa.JpaDaoFactory;
+import contact.service.jpa.JpaDaoFactory;
 
 /**
  * An abstract for dao factory, and make the factory to be singleton.

@@ -1,4 +1,4 @@
-package entity;
+package contact.entity;
 
 import java.io.Serializable;
 
@@ -47,6 +47,14 @@ public class Contact implements Serializable {
 	 */
 	public Contact() {
 		
+	}
+
+	/**
+	 * Constructor require only id and another will be null.
+	 * @param id id of a contact
+	 */
+	public Contact(long id) {
+		this(id, null, null, null, null);
 	}
 	
 	/**

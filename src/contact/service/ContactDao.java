@@ -1,7 +1,7 @@
-package service;
+package contact.service;
 
-import entity.Contact;
-import entity.ContactList;
+import contact.entity.Contact;
+import contact.entity.ContactList;
 
 /**
  * An abstract for contact dao contains method for handling

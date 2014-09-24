@@ -1,11 +1,11 @@
-package service.mem;
+package contact.service.mem;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import service.ContactDao;
-import entity.Contact;
-import entity.ContactList;
+import contact.entity.Contact;
+import contact.entity.ContactList;
+import contact.service.ContactDao;
 
 /**
  * A Data Access Object, used to handle with data operation.
@@ -28,7 +28,7 @@ public class MemContactDao extends ContactDao {
 	}
 
 	/**
-	 * @see service.ContactDao#find(long)
+	 * @see contact.service.ContactDao#find(long)
 	 */
 	@Override
 	public Contact find(long id) {
@@ -36,7 +36,7 @@ public class MemContactDao extends ContactDao {
 	}
 	
 	/**
-	 * @see service.ContactDao#findAll()
+	 * @see contact.service.ContactDao#findAll()
 	 */
 	@Override
 	public ContactList findAll() {
@@ -44,7 +44,7 @@ public class MemContactDao extends ContactDao {
 	}
 	
 	/**
-	 * @see service.ContactDao#findByTitle(java.lang.String)
+	 * @see contact.service.ContactDao#findByTitle(java.lang.String)
 	 */
 	@Override
 	public ContactList findByTitle(String title) {
@@ -58,7 +58,7 @@ public class MemContactDao extends ContactDao {
 	}
 	
 	/**
-	 * @see service.ContactDao#delete(long)
+	 * @see contact.service.ContactDao#delete(long)
 	 */
 	@Override
 	public boolean delete(long id) {
@@ -66,7 +66,7 @@ public class MemContactDao extends ContactDao {
 	}
 	
 	/**
-	 * @see service.ContactDao#save(entity.Contact)
+	 * @see contact.service.ContactDao#save(contact.entity.Contact)
 	 */
 	@Override
 	public boolean save(Contact contact) {
@@ -78,7 +78,7 @@ public class MemContactDao extends ContactDao {
 	}
 	
 	/**
-	 * @see service.ContactDao#update(entity.Contact)
+	 * @see contact.service.ContactDao#update(contact.entity.Contact)
 	 */
 	@Override
 	public boolean update(Contact contact) {

@@ -1,4 +1,4 @@
-package entity;
+package contact.entity;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -51,4 +51,24 @@ public class ContactList implements Serializable {
 		contacts.add(contact);
 	}
 
+	/**
+	 * Check if the contact is already in list.
+	 * @param contact the contact want to check
+	 * @return true if the contact is already in list, otherwise false
+	 */
+	public boolean contains(Contact contact) {
+		for (Contact c : contacts) {
+			if (c.equals(contact))
+				return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Return size of contacts in list.
+	 * @return size of contacts in list
+	 */
+	public int size() {
+		return contacts.size();
+	}
 }

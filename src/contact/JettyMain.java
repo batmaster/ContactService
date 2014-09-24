@@ -1,3 +1,4 @@
+package contact;
 
 
 import org.eclipse.jetty.server.Server;
@@ -5,7 +6,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ServerProperties;
 
-import service.DaoFactory;
+import contact.service.DaoFactory;
 
 /**
  * <p>
@@ -59,20 +60,24 @@ import service.DaoFactory;
 public class JettyMain {
 	
 	static final int PORT = 8080;
+	static Server server;
 
 	public static void main(String[] args) throws Exception {
-		int port = PORT;
-		Server server = new Server( port );
+		setUp();
+	}
+	
+	public static void setUp() throws Exception {
+		server = new Server( PORT );
 		ServletContextHandler context = new ServletContextHandler( ServletContextHandler.SESSIONS );
 		context.setContextPath("/");
 		ServletHolder holder = new ServletHolder( org.glassfish.jersey.servlet.ServletContainer.class );
-		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "resource");
+		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "contact.resource");
 		context.addServlet( holder, "/*" );
 		server.setHandler( context );
 		
 		DaoFactory.getInstance().getContactDao();;
 		
-		System.out.println("Starting Jetty server on port " + port);
+		System.out.println("Starting Jetty server on port " + PORT);
 		server.start();
 		
 		System.out.println("Server started.  Press ENTER to stop it.");
@@ -80,7 +85,10 @@ public class JettyMain {
 		System.out.println("Stopping server.");
 		DaoFactory.getInstance().shutdown();
 		server.stop();
-		
+	}
+	
+	public static String getURL() {
+		return server.getURI().toString();
 	}
 	
 }
