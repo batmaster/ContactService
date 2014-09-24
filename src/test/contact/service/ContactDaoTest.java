@@ -12,6 +12,8 @@ import org.junit.Test;
 import contact.entity.Contact;
 import contact.entity.ContactList;
 import contact.service.ContactDao;
+import contact.service.jpa.JpaContactDao;
+import contact.service.jpa.JpaDaoFactory;
 import contact.service.mem.MemContactDao;
 
 public class ContactDaoTest {
@@ -24,6 +26,7 @@ public class ContactDaoTest {
 	public void setUp() {
 		// create a new DAO for each test and create some sample contacts
 		dao = new MemContactDao();
+		//dao = JpaDaoFactory.getInstance().getContactDao();
 		contact1 = dao.createContact("contact1", "Joe Contact", "joe@microsoft.com", "0000");
 		contact2 = dao.createContact("contact2", "Sally Contract", "sally@foo.com", "1111");
 		contact3 = dao.createContact("contact3", "Foo Bar", "foo@barclub.com", "2222");

@@ -64,6 +64,8 @@ public class JettyMain {
 
 	public static void main(String[] args) throws Exception {
 		setUp();
+		int ch = System.in.read();
+		tearDown();
 	}
 	
 	public static void setUp() throws Exception {
@@ -74,14 +76,13 @@ public class JettyMain {
 		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "contact.resource");
 		context.addServlet( holder, "/*" );
 		server.setHandler( context );
-		
-		DaoFactory.getInstance().getContactDao();;
-		
+	
 		System.out.println("Starting Jetty server on port " + PORT);
 		server.start();
-		
 		System.out.println("Server started.  Press ENTER to stop it.");
-		int ch = System.in.read();
+	}
+	
+	public static void tearDown() throws Exception {
 		System.out.println("Stopping server.");
 		DaoFactory.getInstance().shutdown();
 		server.stop();
