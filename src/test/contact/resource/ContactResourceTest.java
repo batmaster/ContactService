@@ -118,7 +118,7 @@ public class ContactResourceTest {
 				"</contact>"
 			);
 		ContentResponse con = client.newRequest(url + "100").content(content, "application/xml").method(HttpMethod.PUT).send();
-		assertEquals(202,con.getStatus());
+		assertEquals(202, con.getStatus());
 		
 		String get = client.GET(url + "100").getContentAsString();
 		assertTrue(get.contains("tit 200"));
@@ -136,7 +136,7 @@ public class ContactResourceTest {
 				"</contact>"
 			);
 		ContentResponse con = client.newRequest(url + "300").content(content, "application/xml").method(HttpMethod.PUT).send();
-		assertEquals(204,con.getStatus());
+		assertEquals(204, con.getStatus());
 	}
 	
 	/**

@@ -182,6 +182,8 @@ public class ContactResource {
 		if (dao.delete(id)) {
 			EntityTag etag = new EntityTag(Integer.toString(deletingContact.hashCode()));
 			Response.ResponseBuilder builder = request.evaluatePreconditions(etag);
+			// remove still return no etag, why?
+			System.out.println("null? " + builder);
 			if (builder != null)
 				return builder.cacheControl(cache).tag(etag).build();
 			
