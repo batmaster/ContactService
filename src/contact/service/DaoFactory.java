@@ -1,6 +1,7 @@
 package contact.service;
 
 import contact.service.jpa.JpaDaoFactory;
+import contact.service.mem.MemDaoFactory;
 
 /**
  * An abstract for dao factory, and make the factory to be singleton.
@@ -25,11 +26,11 @@ public abstract class DaoFactory {
 	 * @return singleton instance of this subclass
 	 */
 	public static DaoFactory getInstance() {
-//		if (factory == null)
-//			factory = new MemDaoFactory();
-		
 		if (factory == null)
-			factory = new JpaDaoFactory();
+			factory = new MemDaoFactory();
+		
+//		if (factory == null)
+//			factory = new JpaDaoFactory();
 		return factory;
 	}
 	
