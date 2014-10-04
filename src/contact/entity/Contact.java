@@ -16,6 +16,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Will be transformed to contact element in xml form.
  * 
+ * Generate hash code by using attributes value to support ETag.
+ * 
  * @author Poramate Homprakob 5510546077
  *
  */
@@ -127,5 +129,14 @@ public class Contact implements Serializable {
 	@Override
 	public String toString() {
 		return String.format("%d %s %s", id, title, name);
+	}
+
+	/**
+	 * Override hashCode() to be generated from attributes value.
+	 * Used to generate ETag value.
+	 */
+	@Override
+	public int hashCode() {
+		return (id + title + name + email + phoneNumber).hashCode();
 	}
 }

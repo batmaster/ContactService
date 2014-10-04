@@ -15,6 +15,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Will be transformed to contactlist root element in xml form.
  * A List of Contact model, used to store contacts.
  * 
+ * Generate hash code by using hash codes of each contact in the list to support ETag.
+ * 
  * @author Poramate Homprakob 5510546077
  *
  */
@@ -70,5 +72,18 @@ public class ContactList implements Serializable {
 	 */
 	public int size() {
 		return contacts.size();
+	}
+
+	/**
+	 * Override hashCode() to be generated from hash codes of each contact in the list.
+	 * Used to generate ETag value.
+	 */
+	@Override
+	public int hashCode() {
+		int hash = 0;
+		for (Contact c : contacts)
+			hash += c.hashCode();
+		
+		return hash;
 	}
 }
