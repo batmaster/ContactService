@@ -128,7 +128,23 @@ public class Contact implements Serializable {
 	
 	@Override
 	public String toString() {
-		return String.format("%d %s %s", id, title, name);
+		String xml = "";
+		xml += String.format("<contact id=\"%d\">", id);
+		
+		if (title != null)
+			xml += String.format("\n\t<title>%s</title>", title);
+		
+		if (name != null)
+			xml += String.format("\n\t<name>%s</name>", name);
+		
+		if (email != null)
+			xml += String.format("\n\t<email>%s</email>", email);
+		
+		if (phoneNumber != null)
+			xml += String.format("\n\t<phoneNumber>%s</phoneNumber>", phoneNumber);
+		
+		xml += "\n</contact>";
+		return xml;
 	}
 
 	/**

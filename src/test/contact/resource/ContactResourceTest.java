@@ -80,7 +80,7 @@ public class ContactResourceTest {
 	@Test
 	public void test3PostPass() throws Exception {
 		StringContentProvider content = new StringContentProvider(
-			"<contact id=\"100\">" + 
+			"<contact id=\"100\">" +
 				"<title>tit 100</title>" +
 			"</contact>"
 		);
@@ -98,7 +98,7 @@ public class ContactResourceTest {
 	@Test
 	public void test4PostFail() throws Exception {
 		StringContentProvider content = new StringContentProvider(
-				"<contact id=\"100\">" + 
+				"<contact id=\"100\">" +
 					"<title>tit 100</title>" +
 				"</contact>"
 		);
@@ -113,7 +113,7 @@ public class ContactResourceTest {
 	@Test
 	public void test5PutPass() throws Exception {
 		StringContentProvider content = new StringContentProvider(
-				"<contact id=\"200\">" + 
+				"<contact id=\"200\">" +
 					"<title>tit 200</title>" +
 				"</contact>"
 			);
@@ -131,7 +131,7 @@ public class ContactResourceTest {
 	@Test
 	public void test6PutFail() throws Exception {
 		StringContentProvider content = new StringContentProvider(
-				"<contact id=\"300\">" + 
+				"<contact id=\"300\">" +
 					"<title>tit 300</title>" +
 				"</contact>"
 			);

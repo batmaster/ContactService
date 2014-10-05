@@ -48,6 +48,7 @@ public class ContactResource {
 		dao = DaoFactory.getInstance().getContactDao();
 		cache = new CacheControl();
 		cache.setMaxAge(86400);
+		cache.setPrivate(true);
 		System.out.println("ContactResource Created");
 	}
 	
@@ -65,15 +66,13 @@ public class ContactResource {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
-	public Response getContact(@QueryParam("q") String title) {
+	public Response getContact(@QueryParam("q") String title, @Context Request request) {
 		if (title == null) {
 			ContactList contacts = dao.findAll();
-			Response response = Response.ok(contacts).build();
-			return response;
+			return Response.ok(contacts).build();
 		}
 		ContactList contacts = dao.findByTitle(title);
-		Response response = Response.ok(contacts).build();
-		return response;
+		return Response.ok(contacts).build();
 	}
 	
 	/**
@@ -90,17 +89,17 @@ public class ContactResource {
 	public Response getContact(@PathParam("id") int id, @Context Request request) {
 		Contact contact = dao.find(id);
 		if (contact == null) {
-			Response response = Response.noContent().build();
-			return response;
+			return Response.noContent().build();
 		}
 		
 		EntityTag etag = new EntityTag(Integer.toString(contact.hashCode()));
 		Response.ResponseBuilder builder = request.evaluatePreconditions(etag);
-		if (builder != null)
-			return builder.cacheControl(cache).tag(etag).build();
-		
-		Response response = Response.ok(contact).cacheControl(cache).tag(etag).build();
-		return response;
+		// cache changed
+		if (builder == null)
+			builder = Response.ok(contact).tag(etag);
+			
+		builder.cacheControl(cache);
+		return builder.build();
 	}
 
 	/**
@@ -122,15 +121,14 @@ public class ContactResource {
 	public Response postContact(Contact contact, @Context UriInfo uriInfo, @Context Request request) throws URISyntaxException {
 		if (contact.getId() == 0)
 			contact = dao.createContact(contact.getTitle(), contact.getName(), contact.getEmail(), contact.getPhoneNumber());
-			
+		
+		EntityTag etag = new EntityTag(Integer.toString(contact.hashCode()));
+		URI uri = new URI(uriInfo.getAbsolutePath().toString() + contact.getId());
 		if (dao.save(contact)) {
-			EntityTag etag = new EntityTag(Integer.toString(contact.hashCode()));
-			URI uri = new URI(uriInfo.getAbsolutePath().toString() + contact.getId());
-			Response response = Response.created(uri).cacheControl(cache).tag(etag).build();
-			return response;
+			return Response.created(uri).cacheControl(cache).tag(etag).build();
 		}
-		Response response = Response.notModified().build();
-		return response;
+		
+		return Response.notModified().build();
 	}
 	
 	/**
@@ -148,23 +146,27 @@ public class ContactResource {
 	 * @throws URISyntaxException
 	 */
 	@PUT
-	@Path("{id}")
+	@Path("{oldId}")
 	@Consumes(MediaType.APPLICATION_XML)
-	public Response putContact(Contact contact, @Context UriInfo uriInfo, @PathParam("id") int id, @Context Request request) throws URISyntaxException {
-		contact.setId(id);
-		if (dao.update(contact)) {
-			
-			EntityTag etag = new EntityTag(Integer.toString(contact.hashCode()));
-			Response.ResponseBuilder builder = request.evaluatePreconditions(etag);
-			if (builder != null)
-				return builder.cacheControl(cache).tag(etag).build();
-			
-			Response response = Response.accepted(contact).cacheControl(cache).tag(etag).build();
-			return response;
-			
+	public Response putContact(Contact contact, @Context UriInfo uriInfo, @PathParam("oldId") int oldId, @Context Request request) throws URISyntaxException {
+		contact.setId(oldId);
+		// no old id exists
+		if (dao.find(oldId) == null)
+			return Response.noContent().build();
+		
+		Contact existContact = dao.find(oldId);
+		EntityTag etag = new EntityTag(Integer.toString(existContact.hashCode()));
+		Response.ResponseBuilder builder = request.evaluatePreconditions(etag);
+		// match then do
+		if (builder == null) {
+			if (dao.update(contact)) {
+				EntityTag newEtag = new EntityTag(Integer.toString(contact.hashCode()));
+				builder = Response.accepted(contact).tag(newEtag);
+			}
 		}
-		Response response = Response.noContent().build();
-		return response;
+		
+		builder.cacheControl(cache);
+		return builder.build();
 	}
 	
 	/**
@@ -179,19 +181,21 @@ public class ContactResource {
 	@Path("{id}")
 	public Response deleteContact(@PathParam("id") long id, @Context Request request) {
 		Contact deletingContact = dao.find(id);
-		if (dao.delete(id)) {
-			EntityTag etag = new EntityTag(Integer.toString(deletingContact.hashCode()));
-			Response.ResponseBuilder builder = request.evaluatePreconditions(etag);
-			// remove still return no etag, why?
-			System.out.println("null? " + builder);
-			if (builder != null)
-				return builder.cacheControl(cache).tag(etag).build();
-			
-			Response response = Response.ok().build();
-			return response;
+		// no old id exists
+				if (deletingContact == null)
+					return Response.noContent().build();
+		
+		EntityTag etag = new EntityTag(Integer.toString(deletingContact.hashCode()));
+		Response.ResponseBuilder builder = request.evaluatePreconditions(etag);
+		// match then do
+		if (builder == null) {
+			if (dao.delete(id)) {
+				builder = Response.ok().tag(etag);
+			}
 		}
-		Response response = Response.noContent().build();
-		return response;
+			
+		builder.cacheControl(cache);
+		return builder.build();
 	}
 	
 }
