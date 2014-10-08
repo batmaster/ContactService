@@ -29,28 +29,11 @@ public class JpaContactDao extends ContactDao {
 	private final EntityManager em;
 	
 	/**
-	 * constructor with injected EntityManager to use.
-	 * @param em an EntityManager for accessing JPA services.
+	 * Constructor with injected EntityManager to use.
+	 * @param em an EntityManager for accessing JPA services
 	 */
 	public JpaContactDao(EntityManager em) {
 		this.em = em;
-		createTestContact( );
-	}
-	
-	/** add contacts for testing. */
-	private void createTestContact( ) {
-		long id = 101;
-		if (find(id) == null) {
-			Contact test = new Contact("Test contact", "Joe Experimental", "none@testing.com", "000000");
-			test.setId(id);
-			save(test);
-		}
-		id++;
-		if (find(id) == null) {
-			Contact test2 = new Contact("Another Test contact", "Testosterone", "testee@foo.com", "111111");
-			test2.setId(id);
-			save(test2);
-		}
 	}
 
 	/**
@@ -88,15 +71,22 @@ public class JpaContactDao extends ContactDao {
 	@Override
 	public boolean delete(long id) {
 		EntityTransaction tx  = em.getTransaction();
-		tx.begin();
-		Contact contact = find(id);
-		if (contact == null) {
+		try {
+			tx.begin();
+			Contact contact = find(id);
+			if (contact == null) {
+				tx.commit();
+				return false;
+			}
+			em.remove(contact);
 			tx.commit();
+			return true;
+			
+		} catch (EntityExistsException ex) {
+			Logger.getLogger(this.getClass().getName()).warning(ex.getMessage());
+			if (tx.isActive()) try { tx.rollback(); } catch(Exception e) {}
 			return false;
 		}
-		em.remove(contact);
-		tx.commit();
-		return true;
 	}
 	
 	/**
@@ -111,6 +101,7 @@ public class JpaContactDao extends ContactDao {
 			em.persist(contact);
 			tx.commit();
 			return true;
+			
 		} catch (EntityExistsException ex) {
 			Logger.getLogger(this.getClass().getName()).warning(ex.getMessage());
 			if (tx.isActive()) try { tx.rollback(); } catch(Exception e) {}
@@ -124,18 +115,22 @@ public class JpaContactDao extends ContactDao {
 	@Override
 	public boolean update(Contact update) {
 		EntityTransaction tx  = em.getTransaction();
-		tx.begin();
-		if (find(update.getId()) == null) {
+		try {
+			tx.begin();
+			if (find(update.getId()) == null) {
+				return false;
+			}
+			
+			find(update.getId());
+			em.merge(update);
 			tx.commit();
+			return true;
+			
+		} catch (EntityExistsException ex) {
+			Logger.getLogger(this.getClass().getName()).warning(ex.getMessage());
+			if (tx.isActive()) try { tx.rollback(); } catch(Exception e) {}
 			return false;
 		}
 		
-		Contact contact = find(update.getId());
-		contact.setTitle(update.getTitle());
-		contact.setName(update.getName());
-		contact.setEmail(update.getEmail());
-		contact.setPhoneNumber(update.getPhoneNumber());
-		tx.commit();
-		return true;
 	}
 }

@@ -6,16 +6,12 @@ import static org.junit.Assert.assertTrue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import javax.net.ssl.SSLEngineResult.Status;
-import javax.persistence.OrderBy;
-
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
@@ -23,7 +19,6 @@ import org.junit.Test;
 
 import contact.JettyMain;
 import contact.entity.Contact;
-import contact.entity.ContactList;
 import contact.service.DaoFactory;
 
 /**

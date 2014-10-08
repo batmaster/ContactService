@@ -3,10 +3,8 @@ package test.contact.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -16,9 +14,6 @@ import contact.entity.Contact;
 import contact.entity.ContactList;
 import contact.service.ContactDao;
 import contact.service.DaoFactory;
-import contact.service.jpa.JpaContactDao;
-import contact.service.jpa.JpaDaoFactory;
-import contact.service.mem.MemContactDao;
 
 /**
  * Unit test for testing ContactDao.
