@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.inject.Singleton;
+import javax.net.ssl.SSLEngineResult.Status;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -39,6 +40,8 @@ public class ContactResource {
 	
 	private ContactDao dao;
 	private CacheControl cache;
+	private static final int NOT_FOUND = 404;
+	private static final int CONFLICT = 409;
 	
 	/**
 	 * Constructor require no parameter.
@@ -89,7 +92,7 @@ public class ContactResource {
 	public Response getContact(@PathParam("id") int id, @Context Request request) {
 		Contact contact = dao.find(id);
 		if (contact == null) {
-			return Response.noContent().build();
+			return Response.status(NOT_FOUND).build();
 		}
 		
 		EntityTag etag = new EntityTag(Integer.toString(contact.hashCode()));
@@ -128,7 +131,7 @@ public class ContactResource {
 			return Response.created(uri).cacheControl(cache).tag(etag).build();
 		}
 		
-		return Response.notModified().build();
+		return Response.status(CONFLICT).build();
 	}
 	
 	/**
@@ -152,7 +155,7 @@ public class ContactResource {
 		contact.setId(oldId);
 		// no old id exists
 		if (dao.find(oldId) == null)
-			return Response.noContent().build();
+			return Response.status(NOT_FOUND).build();
 		
 		Contact existContact = dao.find(oldId);
 		EntityTag etag = new EntityTag(Integer.toString(existContact.hashCode()));
@@ -161,7 +164,7 @@ public class ContactResource {
 		if (builder == null) {
 			if (dao.update(contact)) {
 				EntityTag newEtag = new EntityTag(Integer.toString(contact.hashCode()));
-				builder = Response.accepted(contact).tag(newEtag);
+				builder = Response.ok(contact).tag(newEtag);
 			}
 		}
 		
@@ -183,7 +186,7 @@ public class ContactResource {
 		Contact deletingContact = dao.find(id);
 		// no old id exists
 				if (deletingContact == null)
-					return Response.noContent().build();
+					return Response.status(NOT_FOUND).build();
 		
 		EntityTag etag = new EntityTag(Integer.toString(deletingContact.hashCode()));
 		Response.ResponseBuilder builder = request.evaluatePreconditions(etag);
