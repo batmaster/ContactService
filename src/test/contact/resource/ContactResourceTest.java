@@ -11,6 +11,7 @@ import javax.persistence.OrderBy;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -34,12 +35,18 @@ public class ContactResourceTest {
 	private static String url;
 	private static HttpClient client;
 	
+	private static final int STATUS_OK = 200;
+	private static final int STATUS_CREATED = 201;
+	private static final int STATUS_NOT_FOUND = 404;
+	private static final int STATUS_CONFLICT = 409;
+	
+	private static int runnerId = 0;
+	
 	@BeforeClass
 	public static void setUp() throws Exception {
 		JettyMain.setUp();
 		
 		url = JettyMain.getURL().toString() + "contacts/";
-		System.out.println("   >> " + url);
 		client = new HttpClient();
 		client.start();
 	}
@@ -56,9 +63,9 @@ public class ContactResourceTest {
 	 * @throws TimeoutException
 	 */
 	@Test
-	public void test1GetPass() throws InterruptedException, ExecutionException, TimeoutException {
+	public void test1GetAllPass() throws InterruptedException, ExecutionException, TimeoutException {
 		ContentResponse con = client.GET(url);
-		assertEquals(200, con.getStatus());
+		assertEquals("Get all contacts in the list that is still empty but return empty ContactList should also return 200 OK", STATUS_OK, con.getStatus());
 	}
 	
 	/**
@@ -69,26 +76,46 @@ public class ContactResourceTest {
 	 */
 	@Test
 	public void test2GetFail() throws InterruptedException, ExecutionException, TimeoutException {
-		ContentResponse con = client.GET(url + "100");
-		assertEquals(204, con.getStatus());
+		ContentResponse con = client.GET(url + runnerId);
+		assertEquals("Try to get contact that doesnot exist should return 404 Not Found", STATUS_NOT_FOUND, con.getStatus());
 	}
 
 	/**
 	 * Test adding some contact.
+	 * And assign 0 for id to let dao generate it.
 	 * @throws Exception
 	 */
 	@Test
 	public void test3PostPass() throws Exception {
 		StringContentProvider content = new StringContentProvider(
-			"<contact id=\"100\">" +
-				"<title>tit 100</title>" +
+			"<contact id=\"0\">" +
+				"<title>tit 01</title>" +
 			"</contact>"
 		);
 		ContentResponse con = client.newRequest(url).content(content, "application/xml").method(HttpMethod.POST).send();
-		assertEquals(201, con.getStatus());
+		assertEquals("Add the new contact should return 201 Created", STATUS_CREATED, con.getStatus());
+		runnerId++;
 		
-		String get = client.GET(url + "100").getContentAsString();
-		assertTrue(get.contains("tit 100"));
+		String get = client.GET(url + runnerId).getContentAsString();
+		assertTrue("Get the added contact and check the id", get.contains(String.format("id=\"%d\"", runnerId)));
+		assertTrue("Also check the title", get.contains("tit 01"));
+		assertTrue("Check the value of unassign attribute", !get.contains("<name>"));
+		
+		String location = con.getHeaders().get(HttpHeader.LOCATION).toString();
+		assertEquals("Check the location header", url + runnerId, location);
+	}
+	
+	/**
+	 * Test getting the new Contact.
+	 * Also test location header.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 * @throws TimeoutException
+	 */
+	@Test
+	public void test4GetPass() throws InterruptedException, ExecutionException, TimeoutException {
+		ContentResponse con = client.GET(url + runnerId);
+		assertEquals("Get the existing contact should return 200 OK", STATUS_OK, con.getStatus());
 	}
 	
 	/**
@@ -96,14 +123,14 @@ public class ContactResourceTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void test4PostFail() throws Exception {
+	public void test5PostFail() throws Exception {
 		StringContentProvider content = new StringContentProvider(
-				"<contact id=\"100\">" +
+				"<contact id=\"1\">" +
 					"<title>tit 100</title>" +
 				"</contact>"
 		);
 		ContentResponse con = client.newRequest(url).content(content, "application/xml").method(HttpMethod.POST).send();
-		assertEquals(304, con.getStatus());
+		assertEquals("Add the contact that the id is already in the list should return 409 Conflict", STATUS_CONFLICT, con.getStatus());
 	}
 	
 	/**
@@ -111,17 +138,18 @@ public class ContactResourceTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void test5PutPass() throws Exception {
+	public void test6PutPass() throws Exception {
 		StringContentProvider content = new StringContentProvider(
-				"<contact id=\"200\">" +
+				"<contact id=\"0\">" +
 					"<title>tit 200</title>" +
 				"</contact>"
 			);
-		ContentResponse con = client.newRequest(url + "100").content(content, "application/xml").method(HttpMethod.PUT).send();
-		assertEquals(202, con.getStatus());
+		ContentResponse con = client.newRequest(url + runnerId).content(content, "application/xml").method(HttpMethod.PUT).send();
+		assertEquals("Update the exist contact that has the same id with id path (not from the new contact id) should return 200 OK", STATUS_OK, con.getStatus());
 		
-		String get = client.GET(url + "100").getContentAsString();
-		assertTrue(get.contains("tit 200"));
+		String get = client.GET(url + runnerId).getContentAsString();
+		assertTrue("Check the updated contact id", get.contains(String.format("id=\"%d\"", runnerId)));
+		assertTrue("Check the updated contact title", get.contains("tit 200"));
 	}
 	
 	/**
@@ -129,14 +157,14 @@ public class ContactResourceTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void test6PutFail() throws Exception {
+	public void test7PutFail() throws Exception {
 		StringContentProvider content = new StringContentProvider(
-				"<contact id=\"300\">" +
+				"<contact id=\"0\">" +
 					"<title>tit 300</title>" +
 				"</contact>"
 			);
 		ContentResponse con = client.newRequest(url + "300").content(content, "application/xml").method(HttpMethod.PUT).send();
-		assertEquals(204, con.getStatus());
+		assertEquals("Try to update not exist contact should return 404 Not Found", STATUS_NOT_FOUND, con.getStatus());
 	}
 	
 	/**
@@ -144,9 +172,9 @@ public class ContactResourceTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void test7DeletePass() throws Exception {
-		ContentResponse con = client.newRequest(url + "100").method(HttpMethod.DELETE).send();
-		assertEquals(200, con.getStatus());
+	public void test8DeletePass() throws Exception {
+		ContentResponse con = client.newRequest(url + runnerId).method(HttpMethod.DELETE).send();
+		assertEquals("Delete the contact in the list correctly should return 200 OK", STATUS_OK, con.getStatus());
 	}
 	
 	/**
@@ -154,8 +182,8 @@ public class ContactResourceTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void test8DeleteFail() throws Exception {
+	public void test9DeleteFail() throws Exception {
 		ContentResponse con = client.newRequest(url + "100").method(HttpMethod.DELETE).send();
-		assertEquals(204, con.getStatus());
+		assertEquals("Delete not exist contact should return 404 Not fould", STATUS_NOT_FOUND, con.getStatus());
 	}
 }
