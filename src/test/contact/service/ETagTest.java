@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import javax.net.ssl.SSLEngineResult.Status;
 import javax.persistence.OrderBy;
 
 import org.eclipse.jetty.client.HttpClient;
@@ -38,12 +39,18 @@ public class ETagTest {
 	private static String url;
 	private static HttpClient client;
 	
+	private static final int STATUS_OK = 200;
+	private static final int STATUS_CREATED = 201;
+	private static final int STATUS_NOT_FOUND = 404;
+	private static final int STATUS_CONFLICT = 409;
+	
+	private static int runnerId = 0;
+	
 	@BeforeClass
 	public static void setUp() throws Exception {
 		JettyMain.setUp();
 		
 		url = JettyMain.getURL().toString() + "contacts/";
-		System.out.println("   >> " + url);
 		client = new HttpClient();
 		client.start();
 	}
@@ -60,18 +67,24 @@ public class ETagTest {
 	@Test
 	public void test1PostWithETag() throws Exception {
 		StringContentProvider content = new StringContentProvider(
-			"<contact id=\"100\">" +
-				"<title>tit 100</title>" +
+			"<contact id=\"0\">" +
+				"<title>tit 01</title>" +
 			"</contact>"
 		);
 		ContentResponse con = client.newRequest(url).content(content, "application/xml").method(HttpMethod.POST).send();
-		assertEquals(201, con.getStatus());
+		assertEquals("Add the new contact should return 201 Created", STATUS_CREATED, con.getStatus());
+		runnerId++;
 		
-		String get = client.GET(url + "100").getContentAsString();
-		assertTrue(get.contains("tit 100"));
+		String get = client.GET(url + runnerId).getContentAsString();
+		assertTrue("Get the added contact and check the id", get.contains(String.format("id=\"%d\"", runnerId)));
+		assertTrue("Also check the title", get.contains("tit 01"));
+		assertTrue("Check the value of unassign attribute", !get.contains("<name>"));
+		
+		String location = con.getHeaders().get(HttpHeader.LOCATION).toString();
+		assertEquals("Check the location header", url + runnerId, location);
 		
 		String etag = con.getHeaders().get("ETag");
-		assertTrue(etag != null);
+		assertTrue("Etag should not be null", etag != null);
 	}
 	
 	/**
@@ -82,12 +95,12 @@ public class ETagTest {
 	 */
 	@Test
 	public void test2GetWithETag() throws InterruptedException, ExecutionException, TimeoutException {
-		ContentResponse con = client.GET(url + "100");
-		assertEquals(200, con.getStatus());
+		ContentResponse con = client.GET(url + runnerId);
+		assertEquals("Get contact should return 200 OK", STATUS_OK, con.getStatus());
 		
 		String etag = con.getHeaders().get("ETag");
-		Contact addedContact = DaoFactory.getInstance().getContactDao().find(100);
-		assertEquals("\"" + addedContact.hashCode() + "\"", etag);
+		Contact addedContact = DaoFactory.getInstance().getContactDao().find(runnerId);
+		assertEquals("Etag should same as contact hash code", "\"" + addedContact.hashCode() + "\"", etag);
 	}
 	
 	/**
@@ -97,19 +110,19 @@ public class ETagTest {
 	@Test
 	public void test3PutWithETag() throws Exception {
 		StringContentProvider content = new StringContentProvider(
-				"<contact id=\"200\">" +
+				"<contact id=\"0\">" +
 					"<title>tit 200</title>" +
 				"</contact>"
 			);
-		ContentResponse con = client.newRequest(url + "100").content(content, "application/xml").method(HttpMethod.PUT).send();
-		assertEquals(202, con.getStatus());
+		ContentResponse con = client.newRequest(url + runnerId).content(content, "application/xml").method(HttpMethod.PUT).send();
+		assertEquals(STATUS_OK, con.getStatus());
 		
-		String get = client.GET(url + "100").getContentAsString();
+		String get = client.GET(url + runnerId).getContentAsString();
 		assertTrue(get.contains("tit 200"));
 		
 		String etag = con.getHeaders().get("ETag");
-		Contact edittedContact = DaoFactory.getInstance().getContactDao().find(100);
-		assertEquals("\"" + edittedContact.hashCode() + "\"", etag);
+		Contact edittedContact = DaoFactory.getInstance().getContactDao().find(runnerId);
+		assertEquals("Etag should same as contact hash code", "\"" + edittedContact.hashCode() + "\"", etag);
 	}
 	
 	/**
@@ -119,20 +132,20 @@ public class ETagTest {
 	@Test
 	public void test4PutWithIfMatchPass() throws Exception {
 		StringContentProvider content = new StringContentProvider(
-				"<contact id=\"300\">" +
+				"<contact id=\"0\">" +
 					"<title>tit 300</title>" +
 				"</contact>"
 			);
 		
-		Contact contact100 = DaoFactory.getInstance().getContactDao().find(100);
-		ContentResponse con = client.newRequest(url + "100").content(content, "application/xml").header(HttpHeader.IF_MATCH, "\"" + contact100.hashCode() + "\"").method(HttpMethod.PUT).send();
-		assertEquals("OK? ", 202, con.getStatus());
+		Contact contact1 = DaoFactory.getInstance().getContactDao().find(runnerId);
+		ContentResponse con = client.newRequest(url + runnerId).content(content, "application/xml").header(HttpHeader.IF_MATCH, "\"" + contact1.hashCode() + "\"").method(HttpMethod.PUT).send();
+		assertEquals("OK? ", STATUS_OK, con.getStatus());
 		
-		String get = client.GET(url + "100").getContentAsString();
-		assertTrue(get.contains("tit 300"));
+		String get = client.GET(url + runnerId).getContentAsString();
+		assertTrue("Check updated contact title", get.contains("tit 300"));
 		
 		String etag = con.getHeaders().get("ETag");
-		Contact edittedContact = DaoFactory.getInstance().getContactDao().find(100);
+		Contact edittedContact = DaoFactory.getInstance().getContactDao().find(runnerId);
 		assertEquals("\"" + edittedContact.hashCode() + "\"", etag);
 	}
 	
@@ -143,13 +156,16 @@ public class ETagTest {
 	@Test
 	public void test5PutWithIfMatchFail() throws Exception {
 		StringContentProvider content = new StringContentProvider(
-				"<contact id=\"300\">" +
-					"<title>tit 300</title>" +
+				"<contact id=\"0\">" +
+					"<title>tit 400</title>" +
 				"</contact>"
 			);
 		
 		Contact contact200 = new Contact(200);
 		ContentResponse con = client.newRequest(url + "200").content(content, "application/xml").header(HttpHeader.IF_MATCH, "\"" + contact200.hashCode() + "\"").method(HttpMethod.PUT).send();
-		assertEquals(204, con.getStatus());
+		assertEquals("Should return 404 Not Fould", STATUS_NOT_FOUND, con.getStatus());
+		
+		String get = client.GET(url + runnerId).getContentAsString();
+		assertTrue("Check contact title have not updated", get.contains("tit 300"));
 	}
 }
