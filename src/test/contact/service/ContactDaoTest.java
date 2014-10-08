@@ -7,130 +7,142 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import contact.entity.Contact;
 import contact.entity.ContactList;
 import contact.service.ContactDao;
+import contact.service.DaoFactory;
 import contact.service.jpa.JpaContactDao;
 import contact.service.jpa.JpaDaoFactory;
 import contact.service.mem.MemContactDao;
 
+/**
+ * Unit test for testing ContactDao.
+ * Used to test find save update delete handling.
+ * The tests will be in oder.
+ * 
+ * @author Poramate Homprakob 5510546077
+ *
+ */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ContactDaoTest {
-	ContactDao dao;
-	Contact contact1;
-	Contact contact2;
-	Contact contact3;
 	
-	@Before
-	public void setUp() {
-		// create a new DAO for each test and create some sample contacts
-		dao = new MemContactDao();
-		//dao = JpaDaoFactory.getInstance().getContactDao();
-		contact1 = dao.createContact("contact1", "Joe Contact", "joe@microsoft.com", "0000");
-		contact2 = dao.createContact("contact2", "Sally Contract", "sally@foo.com", "1111");
-		contact3 = dao.createContact("contact3", "Foo Bar", "foo@barclub.com", "2222");
+	private static ContactDao dao;
+	private static Contact contact1;
+	private static Contact contact2;
+	
+	@BeforeClass
+	public static void setUp() {
+		dao = DaoFactory.getInstance().getContactDao();
+		
+		contact1 = dao.createContact(1, "title1", null, null, null);
+		contact2 = dao.createContact(2, "title2", null, null, null);
 	}
 	
-	private void saveAllContacts() {
-		dao.save(contact1);
-		dao.save(contact2);
-		dao.save(contact3);
-	}
-	
+	/**
+	 * Test finding all contact, but should return empty ContactList.
+	 */
 	@Test
-	public void testFind() {
-		// nothing in database yet
-		Contact foo = dao.find(1);
-		assertNull( "Empty DAO should return null", foo);
-		dao.save(contact1);
-		assertTrue("DAO must assign contact id", contact1.getId() > 0);
-		dao.save(contact2);
-		assertTrue("DAO must assign contact id", contact2.getId() > 0);
-		long id1 = contact1.getId();
-		long id2 = contact2.getId();
-		assertTrue("Contact IDs must be different", id1 != id2 );
-		
-		Contact result1 = dao.find(id1);
-		assertEquals("Should find first contact", contact1, result1);
-		Contact result2 = dao.find(id2);
-		assertEquals("Should find second contact", contact2, result2);
-		
-		// find should be repeatable
-		Contact x1 = dao.find(id1);
-		assertSame( result1, x1 );
-		
-		long id = id1 + id2 + 1; // something not in the dao
-		Contact result = dao.find(id);
-		assertNull( "Contact not in dao", result);
-	}
-
-	@Test
-	public void testFindAll() {
-		ContactList results = dao.findAll();
-		assertEquals("DAO should be empty", 0, results.size());
-		saveAllContacts();
-		results = dao.findAll();
-		assertEquals(3, results.size());
-		assertTrue( results.contains(contact1) );
-		assertTrue( results.contains(contact2) );
-		assertTrue( results.contains(contact3) );
+	public void test1FindAllEmptyList() {
+		ContactList contacts = dao.findAll();
+		assertTrue("Find all at least should return a not null empty ContactList", contacts != null);
+		assertEquals("Empty ContactList has size 0", 0, contacts.size());
 	}
 	
-
+	/**
+	 * Test finding by using id, but id does not exist yet.
+	 */
 	@Test
-	public void testDelete() {
-		dao.save(contact1);
-		long id = contact1.getId();
-		assertTrue( "Delete a contact in dao", dao.delete(id));
-		// shouldn't be there now
-		Contact result = dao.find(id);
-		assertNull( "Already deleted this contact", result);
-		// second time it should fail
-		assertFalse( "Already deleted this contact", dao.delete(id) );
-		// now for a bunch of contacts
-		saveAllContacts();
-		
-		ContactList all = dao.findAll();
-		assertEquals("Added 3 contacts", 3, all.size() );
-		id = contact2.getId();
-		assertTrue( dao.delete(id) );
-		assertEquals( 2, all.size() );
-		assertFalse( dao.delete(id) );
-		id = contact1.getId();
-		assertTrue( dao.delete(id) );
-		assertEquals( 1, all.size() );
-		assertFalse( dao.delete(id) );
-		id = contact3.getId();
-		assertTrue( dao.delete(id) );
-		assertEquals( 0, all.size() );
-		assertFalse( dao.delete(id) );
+	public void test2FindByIdFail() {
+		Contact contact = dao.find(1);
+		assertNull("Get not exist contact by id should return null", contact);	
 	}
 	
+	/**
+	 * Test finding by using title, but id does not exist yet.
+	 */
 	@Test
-	public void testUpdate() {
-		saveAllContacts();
+	public void test3FindByTitleFail() {
+		ContactList contacts = dao.findByTitle("title");
+		assertTrue("Get not exist contact by title should return empty Contactlist", contacts != null);
+		assertEquals("Empty ContactList has size 0", 0, contacts.size());
+	}
+	
+	/**
+	 * Test adding new contact that does not exist in the list.
+	 */
+	@Test
+	public void test4SavePass() {
+		assertTrue("Save a new contact to the list successfully should return true", dao.save(contact1));
 		
-		String email = contact2.getEmail();
-		String title = contact2.getTitle();
-		String newname = "A shiny new name";
-		// create an update for contact2
-		Contact update = new Contact( contact2.getId() );
-		update.setName( newname );
-		assertTrue("Update an existing contact", dao.update(update) );
-		// only the name should be updated!
-		contact2 = dao.find(contact2.getId());
-		assertEquals( newname, contact2.getName() );
-		assertEquals( email, contact2.getEmail() );
-		assertEquals( title, contact2.getTitle() );
-		// update the title
-		String newtitle = "Master of the Universe";
-		update.setTitle(newtitle);
-		update.setName("");  // empty string means delete the name
-		dao.update(update);
-		contact2 = dao.find( contact2.getId() );
-		assertEquals(newtitle, contact2.getTitle() );
-		assertEquals("", contact2.getName() );
-		assertEquals(email, contact2.getEmail() );
+		Contact contact = dao.find(1);
+		assertEquals("Try to get title of contact id 1", contact1.getTitle(), contact.getTitle());
+	}
+	
+	/**
+	 * Test adding exist contact.
+	 */
+	@Test
+	public void test5SaveFail() {
+		assertFalse("Save the same contact should return false", dao.save(contact1));
+	}
+	
+	/**
+	 * Test finding contact with id.
+	 */
+	@Test
+	public void test6FindByIdPass() {
+		Contact contact = dao.find(1);
+		assertEquals("Try to get id of contact id 1", contact1.getId(), contact.getId());
+	}
+	
+	/**
+	 * Test finding contact with title.
+	 */
+	@Test
+	public void test7FindByTitlePass() {
+		Contact contact = dao.find(1);
+		assertEquals("Try to get title of contact id 1", contact1.getTitle(), contact.getTitle());
+	}
+	
+	/**
+	 * Test editing exist contact.
+	 */
+	@Test
+	public void test8UpdatePass() {
+		contact2.setId(contact1.getId());
+		assertTrue("Update the contact should return true", dao.update(contact2));
+		
+		Contact contact = dao.find(contact2.getId());
+		assertEquals("Updated contact id should not be changed", contact1.getId(), contact.getId());
+		assertTrue("The title of updated contact should be changed", !contact1.getTitle().equals(contact.getTitle()));
+	}
+	
+	/**
+	 * Test deleting existing contact.
+	 */
+	@Test
+	public void test9DeletePass() {
+		assertTrue("Delete existing contact with correct id should return true", dao.delete(contact2.getId()));
+	}
+	
+	/**
+	 * Test deleting the contact that does not in the list.
+	 */
+	@Test
+	public void test10DeleteFail() {
+		assertFalse("Delete not exist contact should return false", dao.delete(contact2.getId()));
+	}
+	
+	/**
+	 * Test editing the contact that is not in the list.
+	 */
+	@Test
+	public void test11UpdateFail() {
+		assertFalse("Update the contact that is not in the list should return false", dao.update(contact1));
 	}
 }
